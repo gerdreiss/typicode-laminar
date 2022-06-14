@@ -7,7 +7,8 @@ lazy val `typicode-laminar` =
       scalaVersion                    := "3.1.2",
       organization                    := "pro.reiss",
       libraryDependencies ++= Seq(
-        "com.raquo" %%% "laminar" % "0.14.2"
+        "com.raquo" %%% "laminar"      % "0.14.2",
+        "io.circe"  %%% "circe-parser" % "0.14.2"
       ),
       scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
       scalaJSLinkerConfig ~= { _.withSourceMap(false) },
