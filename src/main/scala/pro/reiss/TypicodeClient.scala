@@ -27,17 +27,18 @@ object TypicodeClient:
       .out(jsonBody[Domain.User])
       .errorOut(jsonBody[String])
 
-  private val backend = FetchBackend()
+  private val backend     = FetchBackend()
+  private val interpreter = SttpClientInterpreter()
 
   def getUsers: Future[Either[String, List[Domain.User]]] =
-    SttpClientInterpreter()
+    interpreter
       .toRequestThrowDecodeFailures(users, Some(typicodeUrl))
       .apply(())
       .send(backend)
       .map(_.body)
 
   def getUser(userId: Int): Future[Either[String, Domain.User]] =
-    SttpClientInterpreter()
+    interpreter
       .toRequestThrowDecodeFailures(user, Some(typicodeUrl))
       .apply(userId)
       .send(backend)
