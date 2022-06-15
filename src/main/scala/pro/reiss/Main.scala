@@ -77,7 +77,7 @@ object Main:
         div(cls := "ui divider"),
         children <-- $userStream.map {
           case Right(users) => renderUserList(users)
-          case Left(error)  => div(cls := "content", p("Loading users failed")) :: Nil
+          case Left(error)  => div(cls := "content", p(s"Loading users failed: $error")) :: Nil
         }
       )
     )

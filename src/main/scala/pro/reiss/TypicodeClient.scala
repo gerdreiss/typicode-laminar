@@ -9,16 +9,21 @@ import sttp.tapir.json.circe.*
 
 import concurrent.ExecutionContext.Implicits.global
 import concurrent.Future
+import pro.reiss.Domain.User
 
 object TypicodeClient:
   private val typicodeUrl = uri"https://jsonplaceholder.typicode.com"
 
-  private val users: PublicEndpoint[Unit, Unit, List[Domain.User], Any] =
-    endpoint.in("users").get.out(jsonBody[List[Domain.User]])
+  private val users: PublicEndpoint[Unit, String, List[User], Any] =
+    endpoint
+      .in("users")
+      .get
+      .out(jsonBody[List[Domain.User]])
+      .errorOut(jsonBody[String])
 
   private val backend = FetchBackend()
 
-  def getUsers: Future[Either[Unit, List[Domain.User]]] =
+  def getUsers: Future[Either[String, List[Domain.User]]] =
     SttpClientInterpreter()
       .toRequestThrowDecodeFailures(users, Some(typicodeUrl))
       .apply(())
