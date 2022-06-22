@@ -4,7 +4,7 @@ lazy val `typicode-laminar` =
     .settings(
       name                            := "typicode-laminar",
       version                         := "0.1.0",
-      scalaVersion                    := "3.1.2",
+      scalaVersion                    := "3.1.3",
       organization                    := "pro.reiss",
       libraryDependencies ++= Seq(
         "com.raquo"                   %%% "laminar"           % "0.14.2",
