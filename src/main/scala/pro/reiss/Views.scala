@@ -7,6 +7,8 @@ import org.scalajs.dom.*
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Failure
 import scala.util.Success
+import pro.reiss.Domain.User
+import com.raquo.airstream.state.Var
 
 enum Command:
   case ShowAllUsers
@@ -15,17 +17,43 @@ enum Command:
 object Views:
   val $userStream = EventStream.fromFuture(TypicodeClient.getUsers)
 
-  val headerVar = Var("Users")
+  val headerVar: Var[String]     = Var("Users")
+  val usersVar: Var[List[User]]  = Var(List.empty)
+  val userVar: Var[Option[User]] = Var(None)
 
   val commandObserver = Observer[Command] {
-    case Command.ShowAllUsers => ???
+    case Command.ShowAllUsers =>
+      TypicodeClient.getUsers
+        .onComplete {
+          case Success(Right(users)) =>
+            headerVar.set("Users")
+            usersVar.set(users)
+            userVar.set(None)
+          case Success(Left(error)) =>
+            headerVar.set(error)
+            usersVar.set(List.empty)
+            userVar.set(None)
+          case Failure(error) =>
+            headerVar.set(error.getMessage)
+            usersVar.set(List.empty)
+            userVar.set(None)
+        }
     case Command.ShowUser(userId) =>
       TypicodeClient
         .getUser(userId)
         .onComplete {
-          case Success(Right(user)) => headerVar.set(user.name)
-          case Success(Left(error)) => headerVar.set(error)
-          case Failure(error)       => headerVar.set(error.getMessage)
+          case Success(Right(user)) =>
+            headerVar.set(user.name)
+            usersVar.set(List.empty)
+            userVar.set(Some(user))
+          case Success(Left(error)) =>
+            headerVar.set(error)
+            usersVar.set(List.empty)
+            userVar.set(None)
+          case Failure(error) =>
+            headerVar.set(error.getMessage)
+            usersVar.set(List.empty)
+            userVar.set(None)
         }
   }
 
