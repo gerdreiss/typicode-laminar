@@ -4,13 +4,39 @@ import com.raquo.laminar.api.L.*
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom.*
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Failure
+import scala.util.Success
+
+enum Command:
+  case ShowAllUsers
+  case ShowUser(userId: Int)
+
 object Views:
   val $userStream = EventStream.fromFuture(TypicodeClient.getUsers)
+
+  val headerVar = Var("Users")
+
+  val commandObserver = Observer[Command] {
+    case Command.ShowAllUsers => ???
+    case Command.ShowUser(userId) =>
+      TypicodeClient
+        .getUser(userId)
+        .onComplete {
+          case Success(Right(user)) => headerVar.set(user.name)
+          case Success(Left(error)) => headerVar.set(error)
+          case Failure(error)       => headerVar.set(error.getMessage)
+        }
+  }
 
   def renderApp: ReactiveHtmlElement[HTMLElement] =
     div(
       cls := "ui raised very padded container segment",
-      h1(cls  := "ui header", i(cls := "circular users icon"), div(cls := "content", "Users")),
+      h1(
+        cls := "ui header",
+        i(cls   := "circular users icon"),
+        div(cls := "content", child.text <-- headerVar.signal)
+      ),
       div(cls := "ui divider"),
       children <-- $userStream.map {
         case Left(error)  => renderError(error)
@@ -37,7 +63,13 @@ object Views:
       cls := "ui card",
       div(
         cls := "content",
-        div(cls := "header", a(user.name)),
+        div(
+          cls := "header",
+          a(user.name),
+          onClick.mapTo(user.id) --> commandObserver.contramap[Int] { userId =>
+            Command.ShowUser(userId)
+          }
+        ),
         div(cls := "description", i(cls := "envelope icon"), user.email),
         div(cls := "description", i(cls := "phone icon"), user.phone),
         div(cls := "description", i(cls := "globe icon"), user.website),
